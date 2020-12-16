@@ -2,6 +2,7 @@ package audit
 
 import (
 	"context"
+	"fmt"
 
 	metadata "cloud.google.com/go/compute/metadata"
 	cl "cloud.google.com/go/logging"
@@ -32,7 +33,7 @@ type AuditEvent struct {
 }
 
 func LogEvent(ctx context.Context, eventType, actingIdentity string, context interface{}) error {
-	return logger.LogSync(ctx, cl.Entry{
+	err := logger.LogSync(ctx, cl.Entry{
 		Severity: cl.Info,
 		Payload: &AuditEvent{
 			EventType:      eventType,
@@ -40,4 +41,9 @@ func LogEvent(ctx context.Context, eventType, actingIdentity string, context int
 			Context:        context,
 		},
 	})
+	if err != nil {
+		return fmt.Errorf("Failed to write audit log: %s", err)
+	}
+
+	return nil
 }
